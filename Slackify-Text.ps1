@@ -58,10 +58,10 @@ if($string)
             $line += "*"
             if($i -eq 0){
                 $space = $bgEmote*$line.Length
-                echo ($bgEmote*$line.Length)
+                Write-Output ($bgEmote*$line.Length)
             }
-            echo $line.Replace('*', $bgEmote).Replace('#', $fgEmote)
+            Write-Output $line.Replace('*', $bgEmote).Replace('#', $fgEmote)
         }
     }
-    echo ($bgEmote*$line.Length)
+    Write-Output ($bgEmote*$line.Length)
 }
