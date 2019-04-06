@@ -1,0 +1,1 @@
+remove-item alias:curl
