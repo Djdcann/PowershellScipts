@@ -1,5 +1,6 @@
 ﻿param(
     # The text to Speak
+    [parameter(ValueFromPipeline)]
     [String]
     $text = "Give me that pepperoni BAYBEEEEEEEEEEEEEEEEE"
 )
