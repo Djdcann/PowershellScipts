@@ -15,6 +15,6 @@ foreach($z in $s){
     }else{
         $false
     }
-    $x
+    Write-Output $x
 }
 Set-Location $staringLocation
