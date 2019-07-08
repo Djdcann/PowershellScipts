@@ -6,7 +6,7 @@ function cut {
   )
 
   process {
-    if ($field -eq $null) { $inputobject -split $delimiter } else {
+    if ($null -eq $field) { $inputobject -split $delimiter } else {
       ($inputobject -split $delimiter)[$field] }
   }
 }
