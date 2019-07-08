@@ -12,9 +12,11 @@ foreach($z in $s){
     $x = Invoke-Expression $cmd
     if($null -eq $x){
         $true
-    }else{
+    }
+    else{
         $false
     }
     Write-Output $x
+    ""
 }
 Set-Location $staringLocation
