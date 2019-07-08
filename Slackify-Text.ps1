@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory=$true)][string]$string,
+    [Parameter(Mandatory = $true)][string]$string,
     [string]$fg = ":heart:",
     [string]$bg = ":_:"
 )
@@ -44,24 +44,20 @@ $dict = @{
 }
 
 
-if($string)
-{
-    foreach($word in $string.Split())
-    {
-        for($i=0;$i -lt $gridLength;$i++)
-        {
+if ($string) {
+    foreach ($word in $string.Split()) {
+        for ($i = 0; $i -lt $gridLength; $i++) {
             $line = ""
-            foreach($x in $word.ToCharArray())
-            {
+            foreach ($x in $word.ToCharArray()) {
                 $line += "*" + $dict["$x"].Split("`n")[$i]
             }
             $line += "*"
-            if($i -eq 0){
-                $space = $bgEmote*$line.Length
-                Write-Output ($bgEmote*$line.Length)
+            if ($i -eq 0) {
+                $space = $bgEmote * $line.Length
+                Write-Output ($bgEmote * $line.Length)
             }
             Write-Output $line.Replace('*', $bgEmote).Replace('#', $fgEmote)
         }
     }
-    Write-Output ($bgEmote*$line.Length)
+    Write-Output ($bgEmote * $line.Length)
 }

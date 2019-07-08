@@ -6,13 +6,14 @@ param(
 $staringLocation = $Pwd
 Set-Location $d
 $s = Get-ChildItem -Directory
-foreach($z in $s){
+foreach ($z in $s) {
     Set-Location $z.FullName
     Write-Output "Checking $Pwd"
     $x = Invoke-Expression $cmd
-    if($null -eq $x){
+    if ($null -eq $x) {
         $true
-    }else{
+    }
+    else {
         $false
     }
     Write-Output $x

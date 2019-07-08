@@ -14,7 +14,7 @@ Function Install-Font {
 
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String]$FontPath,
 
         [Switch]$Recurse
@@ -27,24 +27,28 @@ Function Install-Font {
         $FontItem = Get-Item -Path $FontPath
         if ($FontItem -is [IO.DirectoryInfo]) {
             if ($Recurse) {
-                $Fonts = Get-ChildItem -Path $FontItem -Include ('*.fon','*.otf','*.ttc','*.ttf') -Recurse
-            } else {
-                $Fonts = Get-ChildItem -Path "$FontItem\*" -Include ('*.fon','*.otf','*.ttc','*.ttf')
+                $Fonts = Get-ChildItem -Path $FontItem -Include ('*.fon', '*.otf', '*.ttc', '*.ttf') -Recurse
+            }
+            else {
+                $Fonts = Get-ChildItem -Path "$FontItem\*" -Include ('*.fon', '*.otf', '*.ttc', '*.ttf')
             }
 
             if (!$Fonts) {
                 throw ('Unable to locate any fonts in provided directory: {0}' -f $FontItem.FullName)
             }
-        } elseif ($FontItem -is [IO.FileInfo]) {
-            if ($FontItem.Extension -notin ('.fon','.otf','.ttc','.ttf')) {
+        }
+        elseif ($FontItem -is [IO.FileInfo]) {
+            if ($FontItem.Extension -notin ('.fon', '.otf', '.ttc', '.ttf')) {
                 throw ('Provided file does not appear to be a valid font: {0}' -f $FontItem.FullName)
             }
 
             $Fonts = $FontItem
-        } else {
+        }
+        else {
             throw ('Expected directory or file but received: {0}' -f $FontItem.GetType().Name)
         }
-    } else {
+    }
+    else {
         throw ('Provided font path does not appear to be valid: {0}' -f $FontPath)
     }
 

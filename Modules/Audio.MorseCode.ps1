@@ -1,7 +1,6 @@
 ﻿#region PSLinker imports (no compact)
 
-Function ConvertTo-StringToken
-{
+Function ConvertTo-StringToken {
     <#
         .Synopsis
                Parses a string into an array of tokens.
@@ -182,26 +181,21 @@ Function ConvertTo-StringToken
         [Switch]$IgnoreConsecutiveDelimiters
     )
     
-    Begin
-    {
+    Begin {
         $currentToken = New-Object System.Text.StringBuilder
         $currentQualifer = $null
         
         $delimiters = @{ }
-        ForEach ($item in $Delimiter)
-        {
-            ForEach ($character in $item.GetEnumerator())
-            {
+        ForEach ($item in $Delimiter) {
+            ForEach ($character in $item.GetEnumerator()) {
                 $delimiters[$character] = $true
                 Write-Verbose ("Added delimiter character: '$character'")
             }
         }
         
         $qualifiers = @{ }
-        ForEach ($item in $Qualifier)
-        {
-            ForEach ($character in $item.GetEnumerator())
-            {
+        ForEach ($item in $Qualifier) {
+            ForEach ($character in $item.GetEnumerator()) {
                 $qualifiers[$character] = $true
                 Write-Verbose ("Added qualifier character: $character")
             }
@@ -215,49 +209,38 @@ Function ConvertTo-StringToken
         #>
         
         $escapeChars = @{ }
-        ForEach ($item in $Escape)
-        {
-            ForEach ($character in $item.GetEnumerator())
-            {
+        ForEach ($item in $Escape) {
+            ForEach ($character in $item.GetEnumerator()) {
                 $escapeChars[$character] = $true
                 Write-Verbose ("Added escape character: $character")
             }
         }
         
-        If ($NoDoubleQualifier)
-        {
+        If ($NoDoubleQualifier) {
             $doubleQualifierIsEscape = $false
         }
-        Else
-        {
+        Else {
             $doubleQualifierIsEscape = $true
         }
         
         $lineGroup = New-Object System.Collections.ArrayList
     }
     
-    Process
-    {
-        ForEach ($str in $String)
-        {
+    Process {
+        ForEach ($str in $String) {
             Write-Verbose "Parsing line: $str"
             
             # If the last $str value was in the middle of building a token when the end of the string was reached,
             # handle it before parsing the current $str.
-            If ($currentToken.Length -gt 0)
-            {
-                If (($null -ne $currentQualifer) -and $Span)
-                {
+            If ($currentToken.Length -gt 0) {
+                If (($null -ne $currentQualifer) -and $Span) {
                     $null = $currentToken.Append($LineDelimiter)
                 }
-                Else
-                {
-                    If ($GroupLines)
-                    {
+                Else {
+                    If ($GroupLines) {
                         $null = $lineGroup.Add($currentToken.ToString())
                     }
-                    Else
-                    {
+                    Else {
                         Write-Output $currentToken.ToString()
                     }
                     
@@ -266,33 +249,26 @@ Function ConvertTo-StringToken
                 }
             }
             
-            If ($GroupLines -and ($lineGroup.Count -gt 0))
-            {
+            If ($GroupLines -and ($lineGroup.Count -gt 0)) {
                 Write-Output (New-Object PSCustomObject -Property @{
-                    Tokens = $lineGroup.ToArray()
-                })
+                        Tokens = $lineGroup.ToArray()
+                    })
                 
                 $lineGroup.Clear()
             }
             
-            For ($i = 0; $i -lt $str.Length; $i++)
-            {
+            For ($i = 0; $i -lt $str.Length; $i++) {
                 $currentChar = $str.Chars($i)
                 
-                If ($currentQualifer)
-                {
+                If ($currentQualifer) {
                     # line breaks in qualified token.
                     If ((($currentChar -eq "`n") -or ($currentChar -eq "`r")) -and
-                    (-not $Span))
-                    {
-                        If (($currentToken.Length -gt 0) -or (-not $IgnoreConsecutiveDelimiters))
-                        {
-                            If ($GroupLines)
-                            {
+                        (-not $Span)) {
+                        If (($currentToken.Length -gt 0) -or (-not $IgnoreConsecutiveDelimiters)) {
+                            If ($GroupLines) {
                                 $null = $lineGroup.Add($currentToken.ToString())
                             }
-                            Else
-                            {
+                            Else {
                                 Write-Output $currentToken.ToString()
                             }
                             
@@ -300,38 +276,32 @@ Function ConvertTo-StringToken
                             $currentQualifer = $null
                         }
                         
-                        If ($GroupLines -and ($lineGroup.Count -gt 0))
-                        {
+                        If ($GroupLines -and ($lineGroup.Count -gt 0)) {
                             Write-Output (New-Object PSCustomObject -Property @{
-                                Tokens = $lineGroup.ToArray()
-                            })
+                                    Tokens = $lineGroup.ToArray()
+                                })
                             
                             $lineGroup.Clear()
                         }
                         
                         # we're not including the line breaks in the token, so eat the rest of the consecutive line break characters.
-                        While ((($i + 1) -lt $str.Length) -and (($str.Chars($i + 1) -eq "`r") -or ($str.Chars($i + 1) -eq "`n")))
-                        {
+                        While ((($i + 1) -lt $str.Length) -and (($str.Chars($i + 1) -eq "`r") -or ($str.Chars($i + 1) -eq "`n"))) {
                             $i++
                         }
                     }
                     # embedded, escaped qualifiers
                     ElseIf (($escapeChars.ContainsKey($currentChar) -or (($currentChar -eq $currentQualifer) -and $doubleQualifierIsEscape)) -and
-                    (($i + 1) -lt $str.Length) -and
-                    ($str.Chars($i + 1) -eq $currentQualifer))
-                    {
+                        (($i + 1) -lt $str.Length) -and
+                        ($str.Chars($i + 1) -eq $currentQualifer)) {
                         $null = $currentToken.Append($currentQualifer)
                         $i++
                     }
                     # closing qualifier
-                    ElseIf ($currentChar -eq $currentQualifer)
-                    {
-                        If ($GroupLines)
-                        {
+                    ElseIf ($currentChar -eq $currentQualifer) {
+                        If ($GroupLines) {
                             $null = $lineGroup.Add($currentToken.ToString())
                         }
-                        Else
-                        {
+                        Else {
                             Write-Output $currentToken.ToString()
                         }
                         
@@ -341,29 +311,24 @@ Function ConvertTo-StringToken
                         # Eat any non-delimiter, non-EOL text after the closing qualifier, plus the next delimiter.
                         # Sets the loop up to begin processing the next token (or next consecutive delimiter) next time through.
                         # End-of-line characters are left alone, because eating them can interfere with the GroupLines switch behavior.
-                        While ((($i + 1) -lt $str.Length) -and ($str.Chars($i + 1) -ne "`r") -and ($str.Chars($i + 1) -ne "`n") -and (-not $delimiters.ContainsKey($str.Chars($i + 1))))
-                        {
+                        While ((($i + 1) -lt $str.Length) -and ($str.Chars($i + 1) -ne "`r") -and ($str.Chars($i + 1) -ne "`n") -and (-not $delimiters.ContainsKey($str.Chars($i + 1)))) {
                             $i++
                         }
                         
-                        If ((($i + 1) -lt $str.Length) -and ($delimiters.ContainsKey($str.Chars($i + 1))))
-                        {
+                        If ((($i + 1) -lt $str.Length) -and ($delimiters.ContainsKey($str.Chars($i + 1)))) {
                             $i++
                         }
                     }
                     # token content
-                    Else
-                    {
+                    Else {
                         $null = $currentToken.Append($currentChar)
                     }
                 } # end if ($currentQualifier)
-                Else
-                {
+                Else {
                     Write-Verbose ("* '$currentChar'")
                     
                     # opening qualifier
-                    If (($currentToken.ToString() -match '^\s*$') -and ($qualifiers.ContainsKey($currentChar)))
-                    {
+                    If (($currentToken.ToString() -match '^\s*$') -and ($qualifiers.ContainsKey($currentChar))) {
                         # currentToken is '' or white spaces only
                         #$currentQualifer = $qualifiers[$currentChar]
                         $currentQualifer = $currentChar
@@ -371,16 +336,12 @@ Function ConvertTo-StringToken
                         Write-Verbose "Set current qualifier: '$currentQualifer'"
                     }
                     # delimiter
-                    ElseIf ($delimiters.ContainsKey($currentChar))
-                    {
-                        If (($currentToken.Length -gt 0) -or (-not $IgnoreConsecutiveDelimiters))
-                        {
-                            If ($GroupLines)
-                            {
+                    ElseIf ($delimiters.ContainsKey($currentChar)) {
+                        If (($currentToken.Length -gt 0) -or (-not $IgnoreConsecutiveDelimiters)) {
+                            If ($GroupLines) {
                                 $null = $lineGroup.Add($currentToken.ToString())
                             }
-                            Else
-                            {
+                            Else {
                                 Write-Output $currentToken.ToString()
                             }
                             
@@ -389,16 +350,12 @@ Function ConvertTo-StringToken
                         }
                     }
                     # line breaks (not treated quite the same as delimiters)
-                    ElseIf (($currentChar -eq "`n") -or ($currentChar -eq "`r"))
-                    {
-                        If ($currentToken.Length -gt 0)
-                        {
-                            If ($GroupLines)
-                            {
+                    ElseIf (($currentChar -eq "`n") -or ($currentChar -eq "`r")) {
+                        If ($currentToken.Length -gt 0) {
+                            If ($GroupLines) {
                                 $null = $lineGroup.Add($currentToken.ToString())
                             }
-                            Else
-                            {
+                            Else {
                                 Write-Output $currentToken.ToString()
                             }
                             
@@ -406,18 +363,16 @@ Function ConvertTo-StringToken
                             $currentQualifer = $null
                         }
                         
-                        If ($GroupLines -and ($lineGroup.Count -gt 0))
-                        {
+                        If ($GroupLines -and ($lineGroup.Count -gt 0)) {
                             Write-Output (New-Object PSCustomObject -Property @{
-                                Tokens = $lineGroup.ToArray()
-                            })
+                                    Tokens = $lineGroup.ToArray()
+                                })
                             
                             $lineGroup.Clear()
                         }
                     }
                     # token content
-                    Else
-                    {
+                    Else {
                         $null = $currentToken.Append($currentChar)
                     }
                 } # -not $currentQualifier
@@ -425,33 +380,27 @@ Function ConvertTo-StringToken
         } # end foreach $str in $String
     }
     
-    End
-    {
-        If ($currentToken.Length -gt 0)
-        {
-            If ($GroupLines)
-            {
+    End {
+        If ($currentToken.Length -gt 0) {
+            If ($GroupLines) {
                 $null = $lineGroup.Add($currentToken.ToString())
             }
-            Else
-            {
+            Else {
                 Write-Output $currentToken.ToString()
             }
         }
         
-        If ($GroupLines -and $lineGroup.Count -gt 0)
-        {
+        If ($GroupLines -and $lineGroup.Count -gt 0) {
             Write-Output (New-Object PSCustomObject -Property @{
-                Tokens = $lineGroup.ToArray()
-            })
+                    Tokens = $lineGroup.ToArray()
+                })
         }
     }
 }
 
 #endregion
 
-Function ConvertTo-MorseCode
-{
+Function ConvertTo-MorseCode {
     <#
         .SYNOPSIS
             Converts text to Morse code.
@@ -516,50 +465,48 @@ Function ConvertTo-MorseCode
         [Switch]$Binary
     )
     
-    Begin
-    {
-        If ($PSCmdlet.ParameterSetName -eq 'FromContent')
-        {
+    Begin {
+        If ($PSCmdlet.ParameterSetName -eq 'FromContent') {
             # pipeline workaround
             [String[]]$procValue = @()
         }
         
         # data
         $letters = @{
-            'A' = '.-'
-            'B' = '-...'
-            'C' = '-.-.'
-            'D' = '-..'
-            'E' = '.'
-            'F' = '..-.'
-            'G' = '--.'
-            'H' = '....'
-            'I' = '..'
-            'J' = '.---'
-            'K' = '-.-'
-            'L' = '.-..'
-            'M' = '--'
-            'N' = '-.'
-            'O' = '---'
-            'P' = '.--.'
-            'Q' = '--.-'
-            'R' = '.-.'
-            'S' = '...'
-            'T' = '-'
-            'U' = '..-'
-            'V' = '...-'
-            'W' = '.--'
-            'X' = '-..-'
-            'Y' = '-.--'
-            'Z' = '--..'
-            'Ä' = '.-.-'
-            'Á' = '.--.-'
-            'Å' = '.--.-'
+            'A'  = '.-'
+            'B'  = '-...'
+            'C'  = '-.-.'
+            'D'  = '-..'
+            'E'  = '.'
+            'F'  = '..-.'
+            'G'  = '--.'
+            'H'  = '....'
+            'I'  = '..'
+            'J'  = '.---'
+            'K'  = '-.-'
+            'L'  = '.-..'
+            'M'  = '--'
+            'N'  = '-.'
+            'O'  = '---'
+            'P'  = '.--.'
+            'Q'  = '--.-'
+            'R'  = '.-.'
+            'S'  = '...'
+            'T'  = '-'
+            'U'  = '..-'
+            'V'  = '...-'
+            'W'  = '.--'
+            'X'  = '-..-'
+            'Y'  = '-.--'
+            'Z'  = '--..'
+            'Ä'  = '.-.-'
+            'Á'  = '.--.-'
+            'Å'  = '.--.-'
             'Ch' = '----'
-            'É' = '..-..'
-            'Ñ' = '--.--'
-            'Ö' = '---.'
-            'Ü' = '..--'
+            'É'  = '..-..'
+            'Ñ'  = '--.--'
+            'Ö'  = '---.'
+            'Ü'  = '..--'
         }
         $digits = @{
             '0' = '-----'
@@ -589,117 +536,102 @@ Function ConvertTo-MorseCode
         }
         $prosign = @{
             #!XX = morse, subschar
-            'AA' = '.-.-'
-            'AR' = '.-.-.'
-            'AS' = '.-...'
-            'BK' = '-...-.-'
-            'BT' = '-...-'
-            'CL' = '-.-..-..'
-            'CT' = '-.-.-'
-            'DO' = '-..---'
-            'KN' = '-.--.'
-            'SK' = '...-.-'
-            'SN' = '...-.'
-            'VE' = '...-.'
+            'AA'  = '.-.-'
+            'AR'  = '.-.-.'
+            'AS'  = '.-...'
+            'BK'  = '-...-.-'
+            'BT'  = '-...-'
+            'CL'  = '-.-..-..'
+            'CT'  = '-.-.-'
+            'DO'  = '-..---'
+            'KN'  = '-.--.'
+            'SK'  = '...-.-'
+            'SN'  = '...-.'
+            'VE'  = '...-.'
             'SOS' = '...---...'
         }
         $phrase = @{
-            'over' = 'K'
-            'roger' = 'R'
-            'see you later' = 'CUL'
-            'be seeing you' = 'BCNU'
-            "you're" = 'UR'
-            'signal report' = 'RST'
-            'best regards' = '73'
+            'over'             = 'K'
+            'roger'            = 'R'
+            'see you later'    = 'CUL'
+            'be seeing you'    = 'BCNU'
+            "you're"           = 'UR'
+            'signal report'    = 'RST'
+            'best regards'     = '73'
             'loves and kisses' = '88'
         }
         $qcode = @{
             'i acknowledge receipt' = 'QSL'
-            'do you acknowledge?' = 'QSL?'
-            'wait' = 'QRX'
-            'should i wait?' = 'QRX?'
-            'ready to copy' = 'QRV'
-            'ready to copy?' = 'QRV?'
-            'frequency in use' = 'QRL'
-            'frequency in use?' = 'QRL?'
-            'my location is' = 'QTH'
-            'your location?' = 'QTH?'
+            'do you acknowledge?'   = 'QSL?'
+            'wait'                  = 'QRX'
+            'should i wait?'        = 'QRX?'
+            'ready to copy'         = 'QRV'
+            'ready to copy?'        = 'QRV?'
+            'frequency in use'      = 'QRL'
+            'frequency in use?'     = 'QRL?'
+            'my location is'        = 'QTH'
+            'your location?'        = 'QTH?'
         }
         $letterSeparator = '   '
         $wordSeparator = '       '
     }
     
-    Process
-    {
-        If ($PSCmdlet.ParameterSetName -eq 'FromFile')
-        {
+    Process {
+        If ($PSCmdlet.ParameterSetName -eq 'FromFile') {
             $Path = (Resolve-Path $Path -ErrorAction Stop).Path
             $procValue = Get-Content $Path
         }
-        ElseIf ($PSCmdlet.ParameterSetName -eq 'FromContent')
-        {
+        ElseIf ($PSCmdlet.ParameterSetName -eq 'FromContent') {
             $procValue += $InputObject
         }
     }
     
-    End
-    {
+    End {
         $output = ''
-        ForEach ($line in $procValue)
-        {
+        ForEach ($line in $procValue) {
             If ($line -eq '') { Continue }
             $line = $line.ToUpper()
             $lineBuilder = '';
             
             # phrase and qcode
             $phrase.Keys | ForEach-Object {
-                If ($line.Contains($_.ToUpper()))
-                {
+                If ($line.Contains($_.ToUpper())) {
                     $line = $line.Replace($_.ToUpper(), $phrase[$_])
                 }
             }
             $qcode.Keys | ForEach-Object {
-                If ($line.Contains($_.ToUpper()))
-                {
+                If ($line.Contains($_.ToUpper())) {
                     $line = $line.Replace($_.ToUpper(), $qcode[$_])
                 }
             }
             
             # prosign
             $prosign.Keys | ForEach-Object {
-                If ($line.Contains("!$_"))
-                {
+                If ($line.Contains("!$_")) {
                     # make prosign a single char word
                     #$line = $line.Replace("!$_", (' ' + $prosign[$_][1] + ' '))
                     $line = $line.Replace("!$_", " !$_ ")
                 }
             }
             
-            ForEach ($word in ($line | ConvertTo-StringToken -IgnoreConsecutiveDelimiters))
-            {
-                If ($word.StartsWith('!') -and $prosign.ContainsKey($word.Substring(1)))
-                {
+            ForEach ($word in ($line | ConvertTo-StringToken -IgnoreConsecutiveDelimiters)) {
+                If ($word.StartsWith('!') -and $prosign.ContainsKey($word.Substring(1))) {
                     $lineBuilder += $prosign[$word.Substring(1)]
                     
                     # this will make 10 units between words. we'll deal with them later.
                     $lineBuilder += $letterSeparator
                 }
-                Else
-                {
-                    For ($i = 0; $i -lt $word.Length; $i++)
-                    {
+                Else {
+                    For ($i = 0; $i -lt $word.Length; $i++) {
                         [String]$wordChar = $word[$i]
                         
-                        If ($letters.ContainsKey($wordChar))
-                        {
+                        If ($letters.ContainsKey($wordChar)) {
                             $lineBuilder += $letters[$wordChar]
                         }
-                        ElseIf ($digits.ContainsKey($wordChar))
-                        {
+                        ElseIf ($digits.ContainsKey($wordChar)) {
                             $lineBuilder += $digits[$wordChar]
                         }
-                        ElseIf ($punc.ContainsKey($wordChar))
-                        {
+                        ElseIf ($punc.ContainsKey($wordChar)) {
                             $lineBuilder += $punc[$wordChar]
                         }
                         
@@ -730,19 +662,15 @@ Function ConvertTo-MorseCode
         
         # binary converter
         $binout = [Byte[]]@()
-        For ($i = 0; $i -lt $output.Length; $i++)
-        {
-            If ($output[$i] -eq ' ')
-            {
+        For ($i = 0; $i -lt $output.Length; $i++) {
+            If ($output[$i] -eq ' ') {
                 $binout += 0
             }
-            ElseIf ($output[$i] -eq '.')
-            {
+            ElseIf ($output[$i] -eq '.') {
                 $binout += 1
                 $binout += 0
             }
-            ElseIf ($output[$i] -eq '-')
-            {
+            ElseIf ($output[$i] -eq '-') {
                 $binout += 1
                 $binout += 1
                 $binout += 1
@@ -754,8 +682,7 @@ Function ConvertTo-MorseCode
     }
 }
 
-Function ConvertFrom-MorseCode
-{
+Function ConvertFrom-MorseCode {
     <#
         .SYNOPSIS
             Converts morse code to text.
@@ -771,44 +698,43 @@ Function ConvertFrom-MorseCode
         [String]$InputObject
     )
     
-    Begin
-    {
+    Begin {
         # generated from convertto command:
         # $letters.Keys | sort | % { write-host ("'{0}' = '{1}'" -f $letters[$_], $_) }
         $letters = @{
-            '.-' = 'A'
+            '.-'    = 'A'
             '.--.-' = 'Á'
-            '.-.-' = 'Ä'
-            '-...' = 'B'
-            '-.-.' = 'C'
-            '----' = 'Ch'
-            '-..' = 'D'
-            '.' = 'E'
+            '.-.-'  = 'Ä'
+            '-...'  = 'B'
+            '-.-.'  = 'C'
+            '----'  = 'Ch'
+            '-..'   = 'D'
+            '.'     = 'E'
             '..-..' = 'É'
-            '..-.' = 'F'
-            '--.' = 'G'
-            '....' = 'H'
-            '..' = 'I'
-            '.---' = 'J'
-            '-.-' = 'K'
-            '.-..' = 'L'
-            '--' = 'M'
-            '-.' = 'N'
+            '..-.'  = 'F'
+            '--.'   = 'G'
+            '....'  = 'H'
+            '..'    = 'I'
+            '.---'  = 'J'
+            '-.-'   = 'K'
+            '.-..'  = 'L'
+            '--'    = 'M'
+            '-.'    = 'N'
             '--.--' = 'Ñ'
-            '---' = 'O'
-            '---.' = 'Ö'
-            '.--.' = 'P'
-            '--.-' = 'Q'
-            '.-.' = 'R'
-            '...' = 'S'
-            '-' = 'T'
-            '..-' = 'U'
-            '..--' = 'Ü'
-            '...-' = 'V'
-            '.--' = 'W'
-            '-..-' = 'X'
-            '-.--' = 'Y'
-            '--..' = 'Z'
+            '---'   = 'O'
+            '---.'  = 'Ö'
+            '.--.'  = 'P'
+            '--.-'  = 'Q'
+            '.-.'   = 'R'
+            '...'   = 'S'
+            '-'     = 'T'
+            '..-'   = 'U'
+            '..--'  = 'Ü'
+            '...-'  = 'V'
+            '.--'   = 'W'
+            '-..-'  = 'X'
+            '-.--'  = 'Y'
+            '--..'  = 'Z'
         }
         $digits = @{
             '-----' = '0'
@@ -829,92 +755,86 @@ Function ConvertFrom-MorseCode
             '-.--.-' = '('
             '--..--' = ','
             '.-.-.-' = '.'
-            '-..-.' = '/'
+            '-..-.'  = '/'
             '---...' = ':'
             '..--..' = '?'
             '.--.-.' = '@'
-            '-...-' = '='
+            '-...-'  = '='
         }
         $prosign = @{
             #!XX = morse, subschar
-            'AA' = '.-.-'
-            'AR' = '.-.-.'
-            'AS' = '.-...'
-            'BK' = '-...-.-'
-            'BT' = '-...-'
-            'CL' = '-.-..-..'
-            'CT' = '-.-.-'
-            'DO' = '-..---'
-            'KN' = '-.--.'
-            'SK' = '...-.-'
-            'SN' = '...-.'
-            'VE' = '...-.'
+            'AA'  = '.-.-'
+            'AR'  = '.-.-.'
+            'AS'  = '.-...'
+            'BK'  = '-...-.-'
+            'BT'  = '-...-'
+            'CL'  = '-.-..-..'
+            'CT'  = '-.-.-'
+            'DO'  = '-..---'
+            'KN'  = '-.--.'
+            'SK'  = '...-.-'
+            'SN'  = '...-.'
+            'VE'  = '...-.'
             'SOS' = '...---...'
         }
         $prosignInverse = @{
-            '.-.-' = 'Newline'
-            '.-.-.' = 'End'
-            '.-...' = 'Wait'
-            '-...-.-' = 'Break'
-            '-...-' = 'Paragraph'
-            '-.-..-..' = 'Clear'
-            '-.-.-' = 'Start copying'
-            '-..---' = 'Switch to Wabun code'
-            '-.--.' = 'Invite transmit'
-            '...-.-' = 'End transmit'
-            '...-.' = 'Understood'
+            '.-.-'      = 'Newline'
+            '.-.-.'     = 'End'
+            '.-...'     = 'Wait'
+            '-...-.-'   = 'Break'
+            '-...-'     = 'Paragraph'
+            '-.-..-..'  = 'Clear'
+            '-.-.-'     = 'Start copying'
+            '-..---'    = 'Switch to Wabun code'
+            '-.--.'     = 'Invite transmit'
+            '...-.-'    = 'End transmit'
+            '...-.'     = 'Understood'
             '...---...' = 'Distress'
         }
         $phrase = @{
-            'over' = 'K'
-            'roger' = 'R'
-            'see you later' = 'CUL'
-            'be seeing you' = 'BCNU'
-            "you're" = 'UR'
-            'signal report' = 'RST'
-            'best regards' = '73'
+            'over'             = 'K'
+            'roger'            = 'R'
+            'see you later'    = 'CUL'
+            'be seeing you'    = 'BCNU'
+            "you're"           = 'UR'
+            'signal report'    = 'RST'
+            'best regards'     = '73'
             'loves and kisses' = '88'
         }
         $qcode = @{
             'i acknowledge receipt' = 'QSL'
-            'do you acknowledge?' = 'QSL?'
-            'wait' = 'QRX'
-            'should i wait?' = 'QRX?'
-            'ready to copy' = 'QRV'
-            'ready to copy?' = 'QRV?'
-            'frequency in use' = 'QRL'
-            'frequency in use?' = 'QRL?'
-            'my location is' = 'QTH'
-            'your location?' = 'QTH?'
+            'do you acknowledge?'   = 'QSL?'
+            'wait'                  = 'QRX'
+            'should i wait?'        = 'QRX?'
+            'ready to copy'         = 'QRV'
+            'ready to copy?'        = 'QRV?'
+            'frequency in use'      = 'QRL'
+            'frequency in use?'     = 'QRL?'
+            'my location is'        = 'QTH'
+            'your location?'        = 'QTH?'
         }
         $letterSeparator = '   '
         $wordSeparator = '       '
     }
     
-    Process
-    {
+    Process {
         [String[]]$output = @()
         
         # trim ENDOFMESSAGE AR
-        If ($InputObject.EndsWith($prosign['AR']))
-        {
+        If ($InputObject.EndsWith($prosign['AR'])) {
             $InputObject = $InputObject.Substring(0, $InputObject.Length - $prosign['AR'].Length)
         }
-        Else
-        {
+        Else {
             Write-Warning 'End of message terminator not found.'
         }
         
-        ForEach ($codeLine in ($InputObject -split ($wordSeparator + $prosign['AA'])))
-        {
+        ForEach ($codeLine in ($InputObject -split ($wordSeparator + $prosign['AA']))) {
             If ($codeLine -eq '') { Continue }
             
             $line = ''
-            ForEach ($word in ($codeLine -split ($wordSeparator)))
-            {
+            ForEach ($word in ($codeLine -split ($wordSeparator))) {
                 # a word may be a prosign
-                If ($prosignInverse.ContainsKey($word))
-                {
+                If ($prosignInverse.ContainsKey($word)) {
                     $line += ('[' + $prosignInverse[$word] + '] ')
                     Continue
                 }
@@ -923,20 +843,16 @@ Function ConvertFrom-MorseCode
                 $word -split ($letterSeparator) | ForEach-Object {
                     [String]$codeChar = $_
                     
-                    If ($letters.ContainsKey($codeChar))
-                    {
+                    If ($letters.ContainsKey($codeChar)) {
                         $line += $letters[$codeChar]
                     }
-                    ElseIf ($digits.ContainsKey($codeChar))
-                    {
+                    ElseIf ($digits.ContainsKey($codeChar)) {
                         $line += $digits[$codeChar]
                     }
-                    ElseIf ($punc.ContainsKey($codeChar))
-                    {
+                    ElseIf ($punc.ContainsKey($codeChar)) {
                         $line += $punc[$codeChar]
                     }
-                    Else
-                    {
+                    Else {
                         Write-Verbose "Ignoring unknown character code: '$codeChar'."
                     }
                 }
@@ -953,8 +869,7 @@ Function ConvertFrom-MorseCode
     }
 }
 
-Function Start-PlayMorseCode
-{
+Function Start-PlayMorseCode {
     <#
         .SYNOPSIS
             Plays morse code on the board speaker.
@@ -984,15 +899,12 @@ Function Start-PlayMorseCode
     
     )
     
-    Process
-    {
+    Process {
         $InputObject | ForEach-Object {
-            If ($_ -ne 0)
-            {
+            If ($_ -ne 0) {
                 [Console]::Beep($Frequency, $TimeUnit)
             }
-            Else
-            {
+            Else {
                 Start-Sleep -Milliseconds $TimeUnit
             }
         }

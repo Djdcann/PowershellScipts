@@ -57,10 +57,10 @@ param(
 #*******************************************************************
 
 # Define constants
-set-variable CSIDL_FONTS 0x14 -option constant
+Set-Variable CSIDL_FONTS 0x14 -option constant
 
 # Create hashtable containing valid font file extensions and text to append to Registry entry name.
-$hashFontFileTypes = @{}
+$hashFontFileTypes = @{ }
 $hashFontFileTypes.Add(".fon", "")
 $hashFontFileTypes.Add(".fnt", "")
 $hashFontFileTypes.Add(".ttf", " (TrueType)")
@@ -415,8 +415,7 @@ Add-Type $fontCSharpCode
 # Returns:  Folder path
 #
 #*******************************************************************
-function Get-SpecialFolder($id)
-{
+function Get-SpecialFolder($id) {
     $shell = New-Object –COM "Shell.Application"
     $folder = $shell.NameSpace($id)
     $specialFolder = $folder.Self.Path
@@ -435,22 +434,18 @@ function Get-SpecialFolder($id)
 # Returns:  Registry string value name
 #
 #*******************************************************************
-function Get-RegistryStringNameFromValue([string] $keyPath, [string] $valueData)
-{
+function Get-RegistryStringNameFromValue([string] $keyPath, [string] $valueData) {
     $pattern = [Regex]::Escape($valueData)
 
-    foreach($property in (Get-ItemProperty $keyPath).PsObject.Properties)
-    {
+    foreach ($property in (Get-ItemProperty $keyPath).PsObject.Properties) {
         ## Skip the property if it was one PowerShell added
-        if(($property.Name -eq "PSPath") -or
-            ($property.Name -eq "PSChildName"))
-        {
+        if (($property.Name -eq "PSPath") -or
+            ($property.Name -eq "PSChildName")) {
             continue
         }
         ## Search the text of the property
         $propertyText = "$($property.Value)"
-        if($propertyText -match $pattern)
-        {
+        if ($propertyText -match $pattern) {
             "$($property.Name)"
         }
     }
@@ -467,10 +462,8 @@ function Get-RegistryStringNameFromValue([string] $keyPath, [string] $valueData)
 # Returns:  0 - success, 1 - failure
 #
 #*******************************************************************
-function Remove-SingleFont($file)
-{
-    try
-    {
+function Remove-SingleFont($file) {
+    try {
         $fontFinalPath = Join-Path $fontsFolderPath $file
         $retVal = [FontResource.AddRemoveFonts]::RemoveFont($fontFinalPath)
         if ($retVal -eq 0) {
@@ -478,24 +471,20 @@ function Remove-SingleFont($file)
             Write-Host ""
             1
         }
-        else
-        {
+        else {
             $fontRegistryvaluename = (Get-RegistryStringNameFromValue $fontRegistryPath $file)
             Write-Host "Font: $($fontRegistryvaluename)"
-            if ($fontRegistryvaluename -ne "")
-            {
+            if ($fontRegistryvaluename -ne "") {
                 Remove-ItemProperty -path $fontRegistryPath -name $fontRegistryvaluename
             }
             Remove-Item $fontFinalPath
-            if ($error[0] -ne $null)
-            {
+            if ($error[0] -ne $null) {
                 Write-Host "An error occured removing $`'$($file)`'"
                 Write-Host ""
                 Write-Host "$($error[0].ToString())"
                 $error.clear()
             }
-            else
-            {
+            else {
                 Write-Host "Font `'$($file)`' removed successfully"
                 Write-Host ""
             }
@@ -503,8 +492,7 @@ function Remove-SingleFont($file)
         }
         ""
     }
-    catch
-    {
+    catch {
         Write-Host "An error occured removing `'$($file)`'"
         Write-Host ""
         Write-Host "$($error[0].ToString())"
@@ -525,9 +513,8 @@ function Remove-SingleFont($file)
 # Output:    Help messages are displayed on screen.
 #
 #*******************************************************************
-function Show-Usage()
-{
-$usage = @'
+function Show-Usage() {
+    $usage = @'
 Remove-Font.ps1
 This script is used to uninstall a Windows font.
 
@@ -548,7 +535,7 @@ Examples:
     Remove-Font.ps1 -file "MyFont.ttf"
 '@
 
-$usage
+    $usage
 }
 
 
@@ -562,46 +549,37 @@ $usage
 # Output:  Exit script if parameters are invalid
 #
 #*******************************************************************
-function Process-Arguments()
-{
+function Process-Arguments() {
     ## Write-host 'Processing Arguments'
 
-    if ($unnamedArgs.Length -gt 0)
-    {
-        write-host "The following arguments are not defined:"
+    if ($unnamedArgs.Length -gt 0) {
+        Write-Host "The following arguments are not defined:"
         $unnamedArgs
     }
 
-    if ($help -eq $true) 
-    { 
+    if ($help -eq $true) { 
         Show-Usage
         break
     }
 
     $fontFilePath = Join-Path $fontsFolderPath $file
-    if ((Test-Path $fontFilePath -PathType Leaf) -eq $true)
-    {
-        If ($hashFontFileTypes.ContainsKey((Get-Item $fontFilePath).Extension))
-        {
+    if ((Test-Path $fontFilePath -PathType Leaf) -eq $true) {
+        If ($hashFontFileTypes.ContainsKey((Get-Item $fontFilePath).Extension)) {
             $retVal = Remove-SingleFont $file
-            if ($retVal -ne 0)
-            {
+            if ($retVal -ne 0) {
                 exit 1
             }
-            else
-            {
+            else {
                 exit 0
             }
         }
-        else
-        {
+        else {
             "`'$($fontFilePath)`' not a valid font file type"
             ""
             exit 1
         }
     }
-    else
-    {
+    else {
         "`'$($fontFilePath)`' not found"
         ""
         exit 1

@@ -1,1 +1,1 @@
-Invoke-WebRequest -Uri "https://www.latlong.net/_spm4.php" -Method "POST" -Headers @{"x-requested-with"="XMLHttpRequest";} -ContentType "application/x-www-form-urlencoded" -Body "c1=02144&action=gpcm&cp="
+Invoke-WebRequest -Uri "https://www.latlong.net/_spm4.php" -Method "POST" -Headers @{"x-requested-with" = "XMLHttpRequest"; } -ContentType "application/x-www-form-urlencoded" -Body "c1=02144&action=gpcm&cp="

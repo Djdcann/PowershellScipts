@@ -1,3 +1,3 @@
-Set-PSReadlineKeyHandler -Key TAB -Function Complete
-Set-PSReadlineKeyHandler -Key CTRL+TAB -Function TabCompleteNext
-Set-PSReadlineOption -ShowToolTips
+Set-PSReadLineKeyHandler -Key TAB -Function Complete
+Set-PSReadLineKeyHandler -Key CTRL+TAB -Function TabCompleteNext
+Set-PSReadLineOption -ShowToolTips
