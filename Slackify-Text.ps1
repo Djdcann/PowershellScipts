@@ -1,13 +1,14 @@
 param(
     [Parameter(Mandatory = $true)][string]$string,
-    [string]$fg = ":heart:",
-    [string]$bg = ":_:"
+    [string]$fg = "◼",
+    [string]$bg = "◻",
+    [switch]$Emoji
 )
 
 $gridLength = 5
 
-$bgEmote = $bg
-$fgEmote = $fg
+$bgEmote = if ($Emoji) { "◻" } Else { $bg }
+$fgEmote = if ($Emoji) { "◼" } Else { $fg }
 
 
 $dict = @{
