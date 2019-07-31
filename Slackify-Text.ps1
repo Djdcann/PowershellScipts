@@ -38,7 +38,7 @@ $dict = @{
     'x' = "#***#`n*#*#*`n**#**`n*#*#*`n#***#";
     'y' = "#***#`n*#*#*`n**#**`n**#**`n**#**";
     'z' = "####`n**#*`n*#**`n#***`n####";
-    '_' = "*#*#*`n#*#*#`n#***#`n*#*#*`n**#**";
+    '_' = "*#*#*`n#*#*#`n#***#`n*#*#*`n**#**"; # heart
     '-' = "***`n***`n###`n***`n***";
     '!' = "*#*`n*#*`n*#*`n***`n*#*";
     '?' = "####`n***#`n*###`n****`n*#**";
@@ -54,7 +54,6 @@ if ($string) {
             }
             $line += "*"
             if ($i -eq 0) {
-                $space = $bgEmote * $line.Length
                 Write-Output ($bgEmote * $line.Length)
             }
             Write-Output $line.Replace('*', $bgEmote).Replace('#', $fgEmote)
