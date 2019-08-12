@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$string,
     [string]$fg = "🍕",
-    [string]$bg = "    ",
+    [string]$bg = "  ",
     [switch]$Emoji
 )
 
